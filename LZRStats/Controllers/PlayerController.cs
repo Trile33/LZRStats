@@ -1,4 +1,5 @@
-﻿using LZRStats.Models;
+﻿using LZRStats.DAL;
+using LZRStats.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,13 +8,13 @@ using System.Web.Mvc;
 
 namespace LZRStats.Controllers
 {
-    public class PlayersController : Controller
+    public class PlayerController : Controller
     {
+        DatabaseContext db = new DatabaseContext();
         // GET: Players
         public ActionResult Index()
         {
-            var player = new Player();
-            return View(player);
+            return View(db.Players.ToList());
         }
     }
 }
