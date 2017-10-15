@@ -1,0 +1,177 @@
+﻿@model LZRStats.Models.Player
+
+@{
+    ViewBag.Title = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Player</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Team.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Team.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FirstName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LastName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.JerseyNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.JerseyNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Points)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Points)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OffensiveRebounds)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OffensiveRebounds)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DefensiveRebounds)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DefensiveRebounds)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalRebounds)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalRebounds)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Assists)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Assists)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Steals)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Steals)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Blocks)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Blocks)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FG2Attempted)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FG2Attempted)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FG2Made)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FG2Made)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FG3Attempted)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FG3Attempted)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FG3Made)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FG3Made)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FTAttempted)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FTAttempted)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FTMade)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FTMade)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MinutesPlayed)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MinutesPlayed)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GamesPlayed)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GamesPlayed)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>
