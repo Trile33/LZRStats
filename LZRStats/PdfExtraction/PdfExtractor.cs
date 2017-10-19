@@ -16,6 +16,7 @@ namespace LZRStats.PdfExtraction
             PDDocument doc = PDDocument.load(filePath);
             PDFTextStripper stripper = new PDFTextStripper();
             var textFromFile = stripper.getText(doc);
+            string[] lines = textFromFile.Split( new[] { Environment.NewLine },StringSplitOptions.None);
             return textFromFile;
         }
     }
