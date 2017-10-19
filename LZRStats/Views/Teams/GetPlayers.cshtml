@@ -1,0 +1,147 @@
+﻿@model IEnumerable<LZRStats.Models.Player>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<h2>@Html.DisplayNameFor(model => model.Team.Name) roster</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Team.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstName) 
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.JerseyNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Points)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OffensiveRebounds)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DefensiveRebounds)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalRebounds)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Assists)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Steals)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Blocks)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FG2Attempted)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FG2Made)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FG3Attempted)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FG3Made)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FTAttempted)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FTMade)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MinutesPlayed)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GamesPlayed)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Team.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FirstName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.JerseyNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Points)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OffensiveRebounds)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DefensiveRebounds)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TotalRebounds)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Assists)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Steals)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Blocks)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FG2Attempted)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FG2Made)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FG3Attempted)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FG3Made)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FTAttempted)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FTMade)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MinutesPlayed)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GamesPlayed)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>
