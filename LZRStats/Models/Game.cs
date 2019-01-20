@@ -10,5 +10,6 @@ namespace LZRStats.Models
         public int Id { get; set; }
         public DateTime PlayedOn { get; set; }
         public virtual ICollection<Team> Teams { get; set; }
+        public virtual ICollection<PlayerStats> PlayerStats { get; set; }
     }
 }

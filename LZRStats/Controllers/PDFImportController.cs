@@ -31,6 +31,7 @@ namespace LZRStats.Controllers
                 file.SaveAs(path);
 
                 var errors = PdfExtractor.ExtractFromFile(path);
+                //TODO - handle messages
             }
             // redirect back to the index action to show the form once again
             return RedirectToAction("PDFImport");

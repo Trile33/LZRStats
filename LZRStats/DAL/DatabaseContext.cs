@@ -15,19 +15,36 @@ namespace LZRStats.DAL
 
         }
         public DbSet<Player> Players { get; set; }
+        public DbSet<PlayerStats> PlayerStats { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<Game> Games { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-            modelBuilder.Entity<Team>().HasMany(x => x.Players).WithRequired(x => x.Team).HasForeignKey(x => x.TeamId).WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Team>()
+                .HasMany(x => x.Players)
+                .WithRequired(x => x.Team)
+                .HasForeignKey(x => x.TeamId)
+                .WillCascadeOnDelete(false);
+
             modelBuilder.Entity<Team>().HasMany(x => x.Games).WithMany(x => x.Teams).Map(cs =>
             {
                 cs.MapLeftKey("TeamRefId");
                 cs.MapRightKey("GameRefId");
                 cs.ToTable("GameTeam");
             });
+
+            modelBuilder.Entity<Player>()
+                .HasMany(x => x.PlayerStats)
+                .WithRequired(x => x.Player)
+                .HasForeignKey(x => x.PlayerId);
+
+            modelBuilder.Entity<Game>()
+                .HasMany(x => x.PlayerStats)
+                .WithRequired(x => x.Game)
+                .HasForeignKey(x => x.GameId);
         }
     }
 }

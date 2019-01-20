@@ -16,13 +16,33 @@ namespace LZRStats.PdfExtraction
         {
             List<string> errors = new List<string>();
             string[] lines = GetFileDataLines(filePath);
-            string error = CreateGameDataFromFile(lines[1]);
-            if (!string.IsNullOrEmpty(error))
-                errors.Add(error);
+            List<string> gameData = GetFormattedGameData(lines[1]);
+            var team = GetTeam(gameData);
+            var opponent = GetOpponent(gameData);
+            var gamePlayedOn = GetGameDate(gameData);
+            var game = CreateGameDataFromFile(gameData, team, opponent, gamePlayedOn.Value);
 
+            List<string> removeEmpty = CreatEmptyLinesList(lines);
+            int playersCount = (removeEmpty.Count - 4) / 2;
+            var finalData = removeEmpty.ToArray();
+            CreatePlayerStats(team, playersCount, finalData, game);
+            //TODO - update team win/loss stats
             db.SaveChanges();
 
             return errors.Count > 0 ? errors : null;
+        }
+
+        private static List<string> CreatEmptyLinesList(string[] lines)
+        {
+            var removeEmpty = new List<string>();
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                if (!trimmedLine.Equals(""))
+                    removeEmpty.Add(trimmedLine);
+            }
+
+            return removeEmpty;
         }
 
         private static string[] GetFileDataLines(string filePath)
@@ -34,23 +54,110 @@ namespace LZRStats.PdfExtraction
             return lines;
         }
 
-        public static string CreateGameDataFromFile(string gameDataLine)
+        private static void CreatePlayerStats(Team team, int playersCount, string[] finalData, Game game)
         {
-            string error = null;
-            List<string> gameData = GetFormattedGameData(gameDataLine);
-            var team = GetTeam(gameData);
-            var opponent = GetOpponent(gameData);
-            var gamePlayedOn = GetGameDate(gameData);
+            var counter = 0;
+            var i = 2;
+            while (counter < playersCount)
+            {
+                UpdatePlayerStats(team, finalData, game, i);
 
+                i += 2;
+                counter++;
+            }
+        }
+
+        private static void UpdatePlayerStats(Team team, string[] finalData, Game game, int i)
+        {
+            var playerStats = finalData[i].Split(' ');
+            var temp = playerStats.Where(x => x.Length > 0);
+            playerStats = temp.ToArray();
+            int jerseyNo = int.Parse(playerStats[0]);
+            string firstName = playerStats[1];
+            string lastName = playerStats[2];
+            var dbPlayer = db.Players.Where(x => x.TeamId == team.Id && x.LastName == lastName && x.FirstName == firstName && x.JerseyNumber == jerseyNo)
+                .SingleOrDefault();
+            var player = dbPlayer ?? new Player();
+            if (dbPlayer == null)
+            {
+                player = CreateNewPlayer(team, jerseyNo, firstName, lastName);
+            }
+
+            var stats = CreatePlayerStats(game, playerStats, player);
+            player.PlayerStats = new List<PlayerStats>() { stats };
+
+            player.GamesPlayed++;
+            player.TeamId = team.Id;
+
+            db.Players.Add(player);
+        }
+
+        private static Player CreateNewPlayer(Team team, int jerseyNo, string firstName, string lastName)
+        {
+            var player = new Player();
+            player.FirstName = firstName;
+            player.LastName = lastName;
+            player.JerseyNumber = jerseyNo;
+            player.Team = team;
+
+            return player;
+        }
+
+        private static PlayerStats CreatePlayerStats(Game game, string[] playerStats, Player player)
+        {
+            return new PlayerStats
+            {
+                MinutesPlayed = GetStat(playerStats[3], playerStats[3].ElementAt(0)),
+                Efficiency = GetStat(playerStats[4], playerStats[4].ElementAt(0)), //TODO - read negative efficiency
+                FG2Attempted = GetShootingStat(playerStats[6], playerStats[6].ElementAt(0), 1),
+                FG2Made = GetShootingStat(playerStats[6], playerStats[6].ElementAt(0), 0),
+                FG3Attempted = GetShootingStat(playerStats[7], playerStats[7].ElementAt(0), 1),
+                FG3Made = GetShootingStat(playerStats[7], playerStats[7].ElementAt(0), 0),
+                FTAttempted = GetShootingStat(playerStats[8], playerStats[8].ElementAt(0), 1),
+                FTMade = GetShootingStat(playerStats[8], playerStats[8].ElementAt(0), 0),
+                OffensiveRebounds = GetStat(playerStats[10], playerStats[10].ElementAt(0)),
+                DefensiveRebounds = GetStat(playerStats[11], playerStats[11].ElementAt(0)),
+                Assists = GetStat(playerStats[12], playerStats[12].ElementAt(0)),
+                Turnovers = GetStat(playerStats[13], playerStats[13].ElementAt(0)),
+                Steals = GetStat(playerStats[14], playerStats[14].ElementAt(0)),
+                Blocks = GetStat(playerStats[15], playerStats[15].ElementAt(0)),
+                Points = GetStat(playerStats[16], playerStats[16].ElementAt(0)),
+                GameId = game.Id,
+                Player = player
+            };
+        }
+
+        private static int GetStat(string stat, char element)
+        {
+            if (!char.IsNumber(element))
+                return 0;
+            else
+                return int.Parse(stat);
+        }
+
+        private static int GetShootingStat(string stat, char element, int substringNo)
+        {
+            if (!char.IsNumber(element))
+                return 0;
+            else
+                return int.Parse(stat.Split('/')[substringNo]);
+        }
+
+        #region CreateGameData
+        public static Game CreateGameDataFromFile(List<string> gameData, Team team, Team opponent, DateTime gamePlayedOn)
+        {
             bool teamStatsImportedForThisGame = team.Games?.Any(x => x.PlayedOn == gamePlayedOn) ?? false;
             bool opponentStatsImportedForThisGame = opponent?.Games?.Any(x => x.PlayedOn == gamePlayedOn) ?? false;
             if (teamStatsImportedForThisGame)
-                return $" { team.Name } statistics for game played on {gamePlayedOn.Value.ToLongDateString()} have already been imported!";
+                return null;
+            //return $" { team.Name } statistics for game played on {gamePlayedOn.Value.ToLongDateString()} have already been imported!";
             var game = GetOrCreateGame(team, opponent, gamePlayedOn, opponentStatsImportedForThisGame);
 
-            return error;
+            return game;
         }
+        #endregion
 
+        #region GetTeam
         private static Game GetOrCreateGame(Team team, Team opponent, DateTime? gamePlayedOn, bool opponentStatsImportedForThisGame)
         {
             Game game;
@@ -75,7 +182,6 @@ namespace LZRStats.PdfExtraction
             return game;
         }
 
-        #region GetTeam
         private static Team GetOpponent(List<string> gameData)
         {
             string opponentName = GetOpposingTeamName(gameData);
@@ -168,42 +274,6 @@ namespace LZRStats.PdfExtraction
             else
             {
                 return null;
-            }
-        }
-        #endregion
-
-        #region PlayerShootingStats
-        private static void ExtractPlayerShootingStats(Player player, string[] playerShooting)
-        {
-            if (playerShooting[1].Length == 1)
-            {
-                player.FG2Made = 0;
-                player.FG2Attempted = 0;
-            }
-            else
-            {
-                player.FG2Made = int.Parse(playerShooting[1].Split('/')[0]);
-                player.FG2Attempted = int.Parse(playerShooting[1].Split('/')[1]);
-            }
-            if (playerShooting[2].Length == 1)
-            {
-                player.FG3Made = 0;
-                player.FG3Attempted = 0;
-            }
-            else
-            {
-                player.FG3Made = int.Parse(playerShooting[2].Split('/')[0]);
-                player.FG3Attempted = int.Parse(playerShooting[2].Split('/')[1]);
-            }
-            if (playerShooting[3].Length == 1)
-            {
-                player.FTMade = 0;
-                player.FTAttempted = 0;
-            }
-            else
-            {
-                player.FTMade = int.Parse(playerShooting[3].Split('/')[0]);
-                player.FTAttempted = int.Parse(playerShooting[3].Split('/')[1]);
             }
         }
         #endregion

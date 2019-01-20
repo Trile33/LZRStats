@@ -57,7 +57,7 @@ namespace LZRStats.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,TeamId,FirstName,LastName,JerseyNumber,Points,OffensiveRebounds,DefensiveRebounds,TotalRebounds,Assists,Steals,Blocks,FG2Attempted,FG2Made,FG3Attempted,FG3Made,FTAttempted,FTMade,MinutesPlayed,GamesPlayed")] Player player)
+        public ActionResult Create([Bind(Include = "Id,TeamId,FirstName,LastName,JerseyNumber,GamesPlayed")] Player player)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace LZRStats.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,TeamId,FirstName,LastName,JerseyNumber,Points,OffensiveRebounds,DefensiveRebounds,TotalRebounds,Assists,Steals,Blocks,FG2Attempted,FG2Made,FG3Attempted,FG3Made,FTAttempted,FTMade,MinutesPlayed,GamesPlayed")] Player player)
+        public ActionResult Edit([Bind(Include = "Id,TeamId,FirstName,LastName,JerseyNumber,GamesPlayed")] Player player)
         {
             if (ModelState.IsValid)
             {
