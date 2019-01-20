@@ -30,7 +30,7 @@ namespace LZRStats.Controllers
                 var path = Path.Combine(Server.MapPath("~/PDFFiles"), fileName);
                 file.SaveAs(path);
 
-                PdfExtractor.ExtractFromPdf(path);
+                var errors = PdfExtractor.ExtractFromFile(path);
             }
             // redirect back to the index action to show the form once again
             return RedirectToAction("PDFImport");
