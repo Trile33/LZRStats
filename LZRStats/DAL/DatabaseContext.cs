@@ -10,7 +10,7 @@ namespace LZRStats.DAL
 {
     public class DatabaseContext : DbContext
     {
-        public DatabaseContext() : base("DatabaseContext")
+        public DatabaseContext() : base("DefaultConnection")
         {
 
         }

@@ -29,10 +29,6 @@ namespace LZRStats.PdfExtraction
             var teamName = gameData[3];
             var team = GetTeamForTeamName(teamName);
             var players = new List<Player>();
-
-            
-           
-
         }
 
         private static Team GetTeamForTeamName(string teamName)
