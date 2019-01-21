@@ -108,7 +108,7 @@ namespace LZRStats.PdfExtraction
             return new PlayerStats
             {
                 MinutesPlayed = GetStat(playerStats[3], playerStats[3].ElementAt(0)),
-                Efficiency = GetStat(playerStats[4], playerStats[4].ElementAt(0)), //TODO - read negative efficiency
+                Efficiency = GetStat(playerStats[4], playerStats[4].ElementAt(0)), //TODO - read negative efficiency (probably bad - sign)
                 FG2Attempted = GetShootingStat(playerStats[6], playerStats[6].ElementAt(0), 1),
                 FG2Made = GetShootingStat(playerStats[6], playerStats[6].ElementAt(0), 0),
                 FG3Attempted = GetShootingStat(playerStats[7], playerStats[7].ElementAt(0), 1),
@@ -232,11 +232,11 @@ namespace LZRStats.PdfExtraction
         private static List<string> GetFormattedGameData(string gameDataLine)
         {
             var gameDataTemp = gameDataLine.Replace("         ", " ").Split(new char[] { ' ' }, options: StringSplitOptions.RemoveEmptyEntries);
-            List<string> gameData = FixBuggableChars(gameDataTemp);
+            List<string> gameData = ReplaceBadMinusCharacter(gameDataTemp);
             return gameData;
         }
 
-        private static List<string> FixBuggableChars(string[] gameDataTemp)
+        private static List<string> ReplaceBadMinusCharacter(string[] gameDataTemp)
         {
             var gameData = new List<string>();
             foreach (var line in gameDataTemp)
