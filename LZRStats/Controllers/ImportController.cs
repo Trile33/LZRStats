@@ -1,4 +1,4 @@
-﻿using LZRStats.PdfExtraction;
+﻿using LZRStats.DocumentExtractor;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Web.UI.HtmlControls;
 
 namespace LZRStats.Controllers
 {
-    public class PDFImportController : Controller
+    public class ImportController : Controller
     {
         protected HtmlInputFile file;
         // GET: PDFImport
@@ -19,7 +19,7 @@ namespace LZRStats.Controllers
         }
 
         [HttpPost]
-        public ActionResult PDFImport(HttpPostedFileBase file)
+        public ActionResult Index(HttpPostedFileBase file)
         {
             // Verify that the user selected a file
             if (file != null && file.ContentLength > 0)
@@ -30,7 +30,7 @@ namespace LZRStats.Controllers
                 var path = Path.Combine(Server.MapPath("~/PDFFiles"), fileName);
                 file.SaveAs(path);
 
-                var errors = PdfExtractor.ExtractFromFile(path);
+                var errors = DocExtractor.ExtractFromFile(path);
                 //TODO - handle messages
             }
             // redirect back to the index action to show the form once again

@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace LZRStats.PdfExtraction
+namespace LZRStats.DocumentExtractor
 {
-    public class PdfExtractor
+    public class DocExtractor
     {
         private static DatabaseContext db = new DatabaseContext();
 

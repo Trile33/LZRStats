@@ -302,7 +302,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
-    <Compile Include="Controllers\PDFImportController.cs" />
+    <Compile Include="Controllers\ImportController.cs" />
     <Compile Include="Controllers\PlayersController.cs" />
     <Compile Include="Controllers\TeamsController.cs" />
     <Compile Include="DAL\DatabaseContext.cs" />
@@ -318,7 +318,7 @@
     <Compile Include="Models\PlayerStats.cs" />
     <Compile Include="Models\Player.cs" />
     <Compile Include="Models\Team.cs" />
-    <Compile Include="PdfExtraction\PdfExtractor.cs" />
+    <Compile Include="DocumentExtractor\DocExtractor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -401,7 +401,7 @@
     <Content Include="Views\Players\Edit.cshtml" />
     <Content Include="Views\Players\Index.cshtml" />
     <Content Include="Views\Teams\GetPlayers.cshtml" />
-    <Content Include="Views\PDFImport\PDFImport.cshtml" />
+    <Content Include="Views\Import\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
