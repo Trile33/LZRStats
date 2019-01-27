@@ -12,6 +12,6 @@ namespace LZRStats.Models
         public int NumberOfWins { get; set; }
         public int NumberOfLoses { get; set; }
         public virtual ICollection<Player> Players { get; set; }
-        public virtual ICollection<Game> Games { get; set; }
+        public virtual ICollection<TeamGame> TeamGames { get; set; }
     }
 }

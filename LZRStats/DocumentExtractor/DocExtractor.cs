@@ -1,5 +1,6 @@
 ﻿using LZRStats.DAL;
 using LZRStats.Models;
+using LZRStats.Models.Dtos;
 using Novacode;
 using System;
 using System.Collections.Generic;
@@ -11,25 +12,45 @@ namespace LZRStats.DocumentExtractor
     public class DocExtractor
     {
         private static DatabaseContext db = new DatabaseContext();
+        private static string teamName;
 
-        public static List<string> ExtractFromFile(string filePath)
+        public static List<string> ExtractFromFile(string filePath, string fileName)
         {
+
+
             List<string> errors = new List<string>();
             string[] lines = GetFileDataLines(filePath);
             List<string> gameData = GetFormattedGameData(lines[1]);
+            var gamePlayedOn = GetGameDate(gameData);
+            MatchDetails matchDetails = GetMatchDetails(fileName, gamePlayedOn);
+
+            string gameTotals = lines.ToList().Find(x => x.Contains("TOTAL"));
+            List<string> formattedStats = CreatEmptyLinesList(lines);
             var team = GetTeam(gameData);
             var opponent = GetOpponent(gameData);
-            var gamePlayedOn = GetGameDate(gameData);
-            var game = CreateGameDataFromFile(gameData, team, opponent, gamePlayedOn.Value);
+            var game = CreateGameDataFromFile(gameData, gameTotals, team, opponent, gamePlayedOn.Value, matchDetails);
 
-            List<string> removeEmpty = CreatEmptyLinesList(lines);
-            int playersCount = (removeEmpty.Count - 4) / 2;
-            var finalData = removeEmpty.ToArray();
+            int playersCount = (formattedStats.Count - 4) / 2;
+            var finalData = formattedStats.ToArray();
             CreatePlayerStats(team, playersCount, finalData, game);
-            //TODO - update team win/loss stats
+
             db.SaveChanges();
 
             return errors.Count > 0 ? errors : null;
+        }
+
+        private static MatchDetails GetMatchDetails(string fileName, DateTime? gamePlayedOn)
+        {
+            var matchRoundAndNumberInfo = fileName.Split('-');
+            int round = int.Parse(matchRoundAndNumberInfo[0]);
+            int matchNumber = int.Parse(matchRoundAndNumberInfo[1]);
+            var matchDetails = new MatchDetails
+            {
+                MatchNumber = matchNumber,
+                Round = round,
+                PlayedOn = gamePlayedOn
+            };
+            return matchDetails;
         }
 
         private static List<string> CreatEmptyLinesList(string[] lines)
@@ -144,37 +165,74 @@ namespace LZRStats.DocumentExtractor
         }
 
         #region CreateGameData
-        public static Game CreateGameDataFromFile(List<string> gameData, Team team, Team opponent, DateTime gamePlayedOn)
+        public static Game CreateGameDataFromFile(List<string> gameData, string gameTotals, Team team, Team opponent, DateTime gamePlayedOn, MatchDetails matchDetails)
         {
-            bool teamStatsImportedForThisGame = team.Games?.Any(x => x.PlayedOn == gamePlayedOn) ?? false;
-            bool opponentStatsImportedForThisGame = opponent?.Games?.Any(x => x.PlayedOn == gamePlayedOn) ?? false;
+            var totals = gameTotals.Split(new char[] { ' ' }, options: StringSplitOptions.RemoveEmptyEntries);
+            int pointsScored = int.Parse(totals[totals.Length - 1]);
+            bool teamStatsImportedForThisGame = team.TeamGames?
+                .Any(x => x.Game.PlayedOn.Date == gamePlayedOn.Date || (x.Game.MatchNumber == matchDetails.MatchNumber && x.Game.Round == matchDetails.Round)) ?? false;
+            bool opponentStatsImportedForThisGame = opponent?.TeamGames?
+                .Any(x => x.Game.PlayedOn.Date == gamePlayedOn.Date || (x.Game.MatchNumber == matchDetails.MatchNumber && x.Game.Round == matchDetails.Round)) ?? false;
+
             if (teamStatsImportedForThisGame)
                 return null;
-            //return $" { team.Name } statistics for game played on {gamePlayedOn.Value.ToLongDateString()} have already been imported!";
-            var game = GetOrCreateGame(team, opponent, gamePlayedOn, opponentStatsImportedForThisGame);
+            if (opponentStatsImportedForThisGame)
+            {
+                UpdateWinLossStats(team, opponent, gamePlayedOn, pointsScored);
+            }
+            var game = GetOrCreateGame(team, opponent, opponentStatsImportedForThisGame, pointsScored, matchDetails);
 
             return game;
+        }
+
+        private static void UpdateWinLossStats(Team team, Team opponent, DateTime gamePlayedOn, int pointsScored)
+        {
+            var opponentPointsScored = opponent.TeamGames.SingleOrDefault(x => x.Game.PlayedOn.Date == gamePlayedOn.Date)?.PointsScored;
+            if (opponentPointsScored.HasValue)
+            {
+                bool hasWon = pointsScored > opponentPointsScored.Value;
+                if (hasWon)
+                {
+                    team.NumberOfWins++;
+                    opponent.NumberOfLoses++;
+                }
+                else
+                {
+                    team.NumberOfLoses++;
+                    opponent.NumberOfWins++;
+                }
+            }
         }
         #endregion
 
         #region GetTeam
-        private static Game GetOrCreateGame(Team team, Team opponent, DateTime? gamePlayedOn, bool opponentStatsImportedForThisGame)
+        private static Game GetOrCreateGame(Team team, Team opponent, bool opponentStatsImportedForThisGame, int pointsScored, MatchDetails matchDetails)
         {
             Game game;
             if (opponentStatsImportedForThisGame)
             {
-                game = opponent.Games.SingleOrDefault(x => x.PlayedOn == gamePlayedOn);
-                game.Teams.Add(team);
+                game = opponent.TeamGames.SingleOrDefault(x => x.Game.PlayedOn.Date == matchDetails.PlayedOn.Value.Date).Game;
+                game.TeamGames.Add(new TeamGame
+                {
+                    Team = team,
+                    PointsScored = pointsScored
+                });
             }
             else
             {
                 game = new Game
                 {
-                    Teams = new List<Team>
+                    TeamGames = new List<TeamGame>
                     {
-                        team
+                        new TeamGame
+                        {
+                            Team = team,
+                            PointsScored = pointsScored
+                        }
                     },
-                    PlayedOn = gamePlayedOn.Value
+                    PlayedOn = matchDetails.PlayedOn.Value,
+                    Round = matchDetails.Round,
+                    MatchNumber = matchDetails.MatchNumber
                 };
                 db.Games.Add(game);
             }
@@ -198,8 +256,15 @@ namespace LZRStats.DocumentExtractor
 
         private static string GetOpposingTeamName(List<string> gameData)
         {
-            string lastLine = gameData.LastOrDefault();
-            string opponentName = lastLine.Substring(0, lastLine.Length - 1);
+            int startIndex = gameData.IndexOf("[vs");
+            int endIndex = gameData.IndexOf(gameData.LastOrDefault());
+            gameData[endIndex] = gameData[endIndex].Split(']')[0];
+            var teamNameLines = gameData.GetRange(startIndex + 1, endIndex - startIndex);
+            string opponentName = "";
+            foreach (var line in teamNameLines)
+            {
+                opponentName += teamNameLines.IndexOf(line) == teamNameLines.Count - 1 ? line : line + " ";
+            }
             return opponentName;
         }
 
@@ -209,7 +274,10 @@ namespace LZRStats.DocumentExtractor
             var teamNameEndIndex = gameData.IndexOf("-", 2);
             var teamNameLines = gameData.GetRange(teamNameStartIndex + 1, teamNameEndIndex - 1);
             string teamName = "";
-            teamNameLines.ForEach(x => teamName += x);
+            foreach (var line in teamNameLines)
+            {
+                teamName += teamNameLines.IndexOf(line) == teamNameLines.Count - 1 ? line : line + " ";
+            }
             return teamName;
         }
 

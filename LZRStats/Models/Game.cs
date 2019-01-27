@@ -9,7 +9,9 @@ namespace LZRStats.Models
     {
         public int Id { get; set; }
         public DateTime PlayedOn { get; set; }
-        public virtual ICollection<Team> Teams { get; set; }
+        public int Round { get; set; }
+        public int MatchNumber { get; set; }
+        public virtual ICollection<TeamGame> TeamGames { get; set; }
         public virtual ICollection<PlayerStats> PlayerStats { get; set; }
     }
 }

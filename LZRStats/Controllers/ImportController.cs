@@ -1,8 +1,5 @@
 ﻿using LZRStats.DocumentExtractor;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.HtmlControls;
@@ -30,11 +27,15 @@ namespace LZRStats.Controllers
                 var path = Path.Combine(Server.MapPath("~/PDFFiles"), fileName);
                 file.SaveAs(path);
 
-                var errors = DocExtractor.ExtractFromFile(path);
-                //TODO - handle messages
+                var errors = DocExtractor.ExtractFromFile(path, fileName);
+                ViewBag.Message = $"File {fileName} imported successfully!";
+
+                return View("Index");
             }
             // redirect back to the index action to show the form once again
-            return RedirectToAction("Index");
+            ViewBag.Message = "File import failed!";
+
+            return View("Index");
         }
     }
 }
