@@ -13,13 +13,13 @@ namespace LZRStats.Controllers
     {
         protected HtmlInputFile file;
         // GET: PDFImport
-        public ActionResult PDFImport()
+        public ActionResult Index()
         {
             return View();
         }
 
         [HttpPost]
-        public ActionResult Index(HttpPostedFileBase file)
+        public ActionResult Import(HttpPostedFileBase file)
         {
             // Verify that the user selected a file
             if (file != null && file.ContentLength > 0)
@@ -34,7 +34,7 @@ namespace LZRStats.Controllers
                 //TODO - handle messages
             }
             // redirect back to the index action to show the form once again
-            return RedirectToAction("PDFImport");
+            return RedirectToAction("Index");
         }
     }
 }

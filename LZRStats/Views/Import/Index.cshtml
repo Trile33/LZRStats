@@ -1,12 +1,12 @@
 ﻿
 
 @{
-    ViewBag.Title = "PDFImport";
+    ViewBag.Title = "Import";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <h2>Statistics import</h2>
 <div class="row">
-    @using (Html.BeginForm("PDFImport", "PDFImport", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    @using (Html.BeginForm("Import", "Import", FormMethod.Post, new { enctype = "multipart/form-data" }))
     {
         <div class="col-sm-4">
             <input type="file" name="file" accept=".docx" />
