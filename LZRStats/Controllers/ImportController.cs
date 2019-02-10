@@ -28,7 +28,7 @@ namespace LZRStats.Controllers
                 file.SaveAs(path);
 
                 var errors = DocExtractor.ExtractFromFile(path, fileName);
-                ViewBag.Message = $"File {fileName} imported successfully!";
+                ViewBag.Message = errors.Count > 0 ? $"File {fileName} import failed! {errors.ToString()}" : $"File {fileName} imported successfully!";
 
                 return View("Index");
             }

@@ -29,6 +29,11 @@ namespace LZRStats.DocumentExtractor
             var team = GetTeam(gameData);
             var opponent = GetOpponent(gameData);
             var game = CreateGameDataFromFile(gameData, gameTotals, team, opponent, gamePlayedOn.Value, matchDetails);
+            if (game == null)
+            {
+                errors.Add("File already imported.");
+                return errors;
+            }
 
             int playersCount = (formattedStats.Count - 4) / 2;
             var finalData = formattedStats.ToArray();
@@ -171,23 +176,26 @@ namespace LZRStats.DocumentExtractor
             int pointsScored = int.Parse(totals[totals.Length - 1]);
             bool teamStatsImportedForThisGame = team.TeamGames?
                 .Any(x => x.Game.PlayedOn.Date == gamePlayedOn.Date || (x.Game.MatchNumber == matchDetails.MatchNumber && x.Game.Round == matchDetails.Round)) ?? false;
+            if (teamStatsImportedForThisGame)
+                return null;
+
             bool opponentStatsImportedForThisGame = opponent?.TeamGames?
                 .Any(x => x.Game.PlayedOn.Date == gamePlayedOn.Date || (x.Game.MatchNumber == matchDetails.MatchNumber && x.Game.Round == matchDetails.Round)) ?? false;
 
-            if (teamStatsImportedForThisGame)
-                return null;
+           
             if (opponentStatsImportedForThisGame)
             {
-                UpdateWinLossStats(team, opponent, gamePlayedOn, pointsScored);
+                UpdateWinLossStats(team, opponent, gamePlayedOn, pointsScored, matchDetails);
             }
             var game = GetOrCreateGame(team, opponent, opponentStatsImportedForThisGame, pointsScored, matchDetails);
 
             return game;
         }
 
-        private static void UpdateWinLossStats(Team team, Team opponent, DateTime gamePlayedOn, int pointsScored)
+        private static void UpdateWinLossStats(Team team, Team opponent, DateTime gamePlayedOn, int pointsScored, MatchDetails matchDetails)
         {
-            var opponentPointsScored = opponent.TeamGames.SingleOrDefault(x => x.Game.PlayedOn.Date == gamePlayedOn.Date)?.PointsScored;
+            //TODO compare with match round and number
+            var opponentPointsScored = opponent.TeamGames.SingleOrDefault(x => x.Game.PlayedOn.Date == gamePlayedOn.Date || (x.Game.MatchNumber == matchDetails.MatchNumber && x.Game.Round == matchDetails.Round))?.PointsScored;
             if (opponentPointsScored.HasValue)
             {
                 bool hasWon = pointsScored > opponentPointsScored.Value;
@@ -211,7 +219,8 @@ namespace LZRStats.DocumentExtractor
             Game game;
             if (opponentStatsImportedForThisGame)
             {
-                game = opponent.TeamGames.SingleOrDefault(x => x.Game.PlayedOn.Date == matchDetails.PlayedOn.Value.Date).Game;
+                //TODO compare with match round and number
+                game = opponent.TeamGames.SingleOrDefault(x => x.Game.PlayedOn.Date == matchDetails.PlayedOn.Value.Date || (x.Game.MatchNumber == matchDetails.MatchNumber && x.Game.Round == matchDetails.Round)).Game;
                 game.TeamGames.Add(new TeamGame
                 {
                     Team = team,
@@ -273,11 +282,20 @@ namespace LZRStats.DocumentExtractor
             var teamNameStartIndex = gameData.IndexOf("-");
             var teamNameEndIndex = gameData.IndexOf("-", 2);
             var teamNameLines = gameData.GetRange(teamNameStartIndex + 1, teamNameEndIndex - 1);
+
             string teamName = "";
-            foreach (var line in teamNameLines)
+            if (teamNameLines[0].Length == 1)
+                teamNameLines.ForEach(x => teamName += x);
+            else
             {
-                teamName += teamNameLines.IndexOf(line) == teamNameLines.Count - 1 ? line : line + " ";
+                foreach (string line in teamNameLines)
+                {
+                    //TODO remove whitespaces from team name
+                    string temp = line.Replace(" ", "");
+                    teamName += teamNameLines.IndexOf(line) == teamNameLines.Count - 1 ? temp : temp + " ";
+                }
             }
+
             return teamName;
         }
 
